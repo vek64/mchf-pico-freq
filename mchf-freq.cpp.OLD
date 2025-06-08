@@ -1,0 +1,152 @@
+/**
+ * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#include <stdio.h> // Include for printf
+#include <stdlib.h> // Include for dtostrf
+#include <string.h> // Include for strlen
+
+// the following libs are from Pico SDK ????
+#include "pico/stdlib.h"
+#include "hardware/gpio.h"
+#include "hardware/adc.h"
+
+// github.com/martinkooij/pi-pico-LCD.git
+// it is copied localy.
+#include "lcd_display.hpp"
+
+
+// LCD pin definitions (converted from Arduino pins)
+const uint pin_RS = 14;
+const uint pin_EN = 15;
+const uint pin_d4 = 2;
+const uint pin_d5 = 3;
+const uint pin_d6 = 4;
+const uint pin_d7 = 5;
+const uint pin_BL = 10;  // Backlight
+
+// ADC channel for button reading (GPIO26 = ADC0, GPIO27 = ADC1, GPIO28 = ADC2)
+const uint BUTTON_ADC_PIN = 26;  // Use ADC0
+const uint ADC_CHANNEL = 0;
+
+
+
+LCDdisplay myLCD(pin_d4,pin_d5,pin_d6,pin_d7,pin_RS,pin_EN,16,2); // DB4, DB5, DB6, DB7, RS, E, character_width, no_of_lines
+
+
+uint16_t read_buttons(void) {
+    // Read ADC value (12-bit, 0-4095)
+    uint16_t adc_value = adc_read();
+    
+    // Convert to similar range as Arduino (0-1023)
+    return adc_value >> 2;  // Divide by 4 to get 0-1023 range
+}
+
+const char* get_button_name(uint16_t adc_value) {
+    if (adc_value < 0.5) {
+        return "Right ";
+    }
+    else if (adc_value < 1.5) {
+        return "Up    ";
+    }
+    else if (adc_value < 1.8) {
+        return "Down  ";
+    }
+    else if (adc_value < 2.9) {
+        return "Left  ";
+    }
+    else if (adc_value > 3.0) {
+        return "Select";
+    }
+    else {
+        return "None  ";
+    }
+}
+void convert_float_str(float adc_voltage, char str_voltage[5]) {
+    snprintf(str_voltage, 5, "%.2f", adc_voltage);
+}
+
+
+
+int main() {
+    stdio_init_all();
+
+      // Initialize hardware
+    //init_pins();
+    sleep_ms(100);
+    
+    // Initialize LCD
+	myLCD.init();
+    
+/*     myLCD.clear();
+		myLCD.cursor_on();
+		myLCD.print("HELLO   ");
+		sleep_ms(2500);
+		myLCD.clear() ;
+		myLCD.cursor_off();
+		myLCD.print_wrapped("0123456789012345BYE");
+ */
+
+    // Display initial messages
+    myLCD.clear();
+	myLCD.cursor_on();
+    myLCD.print("BlueCatSystems");
+
+/*     
+    lcd_set_cursor(0, 0);
+    lcd_print("BlueCatSystems.com");
+    lcd_set_cursor(0, 1);
+    lcd_print("Press Key:");
+     */
+
+
+    adc_init();
+
+    // Make sure GPIO is high-impedance, no pullups etc
+    adc_gpio_init(BUTTON_ADC_PIN);
+    // Select ADC input 0 (GPIO26)
+    adc_select_input(ADC_CHANNEL);
+
+    
+    // 12-bit conversion, assume max value == ADC_VREF == 3.3 V
+    const float conversion_factor = 3.3f / (1 << 12);
+
+    uint16_t adc_value = 0;
+    float adc_voltage = 0.0f;
+    char str_voltage[5]; // Buffer for voltage string, enough for "3.33" + null terminator
+
+    while (1) {
+        adc_value = adc_read();
+        adc_voltage = adc_value * conversion_factor;
+        printf("Raw value: 0x%03x, voltage: %f V\n", adc_value, adc_voltage);
+        sleep_ms(500);
+
+       
+        //str_voltage = "3.33"
+        // Use dtostrf to convert the float to a string
+        convert_float_str(adc_voltage, str_voltage);
+
+        
+        // Display ADC value
+        //lcd_set_cursor(10, 0);
+        myLCD.cursor_on();
+        
+        // Clear the area first by printing spaces
+        myLCD.print("      ");
+        
+        // Display Voltage
+        myLCD.goto_pos(0, 1);        
+        myLCD.print(str_voltage);
+        
+        // Display button name
+        myLCD.goto_pos(10, 1);
+        myLCD.print(get_button_name(adc_voltage));
+        
+        // Print to console for debugging
+        printf("ADC: %d, Button: %s\n", adc_voltage, get_button_name(adc_voltage));
+        
+        sleep_ms(100);  // Small delay to prevent excessive updates
+    }
+}
