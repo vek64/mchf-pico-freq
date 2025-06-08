@@ -3,6 +3,7 @@ build/*
 # Except for *.uf2
 !build/*.uf2
 
+.vscode
 
 # Prerequisites
 *.d

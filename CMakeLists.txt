@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.13...3.27)
 # note: this must happen before project()
 include(pico_sdk_import.cmake)
 
-project(my_project)
+project(my_project C CXX ASM)
 
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -17,18 +17,21 @@ pico_sdk_init()
 
 # rest of your project
 
-add_executable(hello_adc
-        hello_adc.c
+add_executable(mchf-freq
+        mchf-freq.cpp
         )
+# Add the pi-pico-LCD library which aggregates LCD 1602 control
+# 
+add_subdirectory(../lcd_display build)
 
-target_link_libraries(hello_adc pico_stdlib hardware_adc)
+target_link_libraries(mchf-freq pico_stdlib hardware_adc lcd_display)
 
 
     # enable usb output, disable uart output
-    pico_enable_stdio_usb(hello_adc 1)
-    pico_enable_stdio_uart(hello_adc 0)
+    pico_enable_stdio_usb(mchf-freq 1)
+    pico_enable_stdio_uart(mchf-freq 0)
 
 
 # create map/bin/hex file etc.
-pico_add_extra_outputs(hello_adc)
+pico_add_extra_outputs(mchf-freq)
 
