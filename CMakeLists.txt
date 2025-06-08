@@ -13,16 +13,15 @@ pico_sdk_init()
 
 
 
-
-
 # rest of your project
 
 add_executable(mchf-freq
         mchf-freq.cpp
         )
 # Add the pi-pico-LCD library which aggregates LCD 1602 control
-# 
-add_subdirectory(../lcd_display build)
+# copy "lcd_display" from gihub to the same level as mchf-freq
+# https://github.com/martinkooij/pi-pico-LCD/tree/main/lcd_display
+add_subdirectory(lcd_display build)
 
 target_link_libraries(mchf-freq pico_stdlib hardware_adc lcd_display)
 

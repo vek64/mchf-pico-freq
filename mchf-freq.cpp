@@ -8,10 +8,13 @@
 #include <stdlib.h> // Include for dtostrf
 #include <string.h> // Include for strlen
 
+// the following libs are from Pico SDK ????
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
 
+// github.com/martinkooij/pi-pico-LCD.git
+// it is copied localy.
 #include "lcd_display.hpp"
 
 
