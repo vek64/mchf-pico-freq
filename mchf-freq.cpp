@@ -28,8 +28,8 @@ const uint pin_BL = 10;  // Backlight
 const uint BUTTON_ADC_PIN = 26;  // GPIO26 = ADC0
 const uint ADC_CHANNEL = 0;
 
-// ADC conversion factor: 5V / 4096 (12-bit ADC)
-const float ADC_CONVERSION_FACTOR = 5.0f / (1 << 12);
+// ADC conversion factor: 3.3V / 4096 (12-bit ADC) -- NNED deviced to get 5V from LCD module to 3.3V
+const float ADC_CONVERSION_FACTOR = 3.3f / (1 << 12);
 
 // Button voltage thresholds (adjusted for actual voltage values)
 const int ADC_RIGHT = 50;
